@@ -1,3 +1,9 @@
+lliurex-sgbd (0.74-lliurex13) bionic; urgency=medium
+
+  * Initial release for bionic
+
+ -- Juan Ramon Pelegrina <juapesai@hotmail.com>  Mon, 15 Oct 2018 14:17:23 +0200
+
 lliurex-sgbd (0.74-lliurex3) xenial; urgency=medium
 
   * Fixed pmb and moodle db user pasword when a backup is restored
