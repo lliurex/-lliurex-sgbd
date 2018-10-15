@@ -1,0 +1,474 @@
+#!/bin/bash
+
+set -e
+
+user="root"
+passwd_file="/root/.my.cnf"
+utf8_cnf="/etc/mysql/conf.d/utf8_charset.cnf"
+mysqlSock="/var/run/mysqld/mysqld.sock"
+passwd="null"
+sqltest="$(mktemp /tmp/lliurex-sgbdXXXX)"
+debug=0
+limit=10
+alive=2
+type_db=""
+
+mysql_version_upper(){
+    local ret=1;
+    ver=$(mysqld --version 2>&1|perl -nE '/(\d+\.\d+\.\d+)/ && print $1')
+    is_maria=$(mysqld --version 2>&1|grep -io 'mariadb'|wc -l)
+    if [ $is_maria -gt 0 ]; then
+	type_db='maria';
+    else
+	type_db='mysql';
+    fi
+    
+    if [ "$type_db" = "maria" ]; then 
+	ret=0
+    else
+	if dpkg --compare-versions $ver gt "5.7.6"; then ret=0; fi;
+    fi
+
+
+    if [ $debug -eq 1 ]; then
+	if [ $ret -eq 0 ]; then
+    	    echo "Compare versions: Detected $type_db version $ver (mysql > 5.7.6 new user tables)"
+	else
+	    echo "Compare versions: Detected $type_db version $ver (mysql < 5.7.6)"
+	fi
+    fi
+
+    return $ret
+}
+
+is_mysql_alive(){
+	local ret=1
+	alive=1
+	tst=$(ps ax|grep mysqld|grep -v grep|wc -l)
+	if [ -e $mysqlSock ] && [ $tst -gt 0 ]; then
+		ret=0
+		alive=0
+	fi
+	if [ $debug -eq 1 ] ; then
+	    if [ $ret -eq 0 ]; then
+		echo "mysqld esta vivo!"
+	    else
+		echo "mysqld esta muerto!"
+	    fi
+	fi
+	return $ret
+}
+
+do_create_passwd(){
+	passwd="`pwgen --capitalize --numerals 7 1`"
+	do_write_mycnf > "$passwd_file"
+	chmod 600 $passwd_file
+
+	return 0
+}
+
+do_get_passwd(){
+	passwd=$(sed -ne "/^\[mysql\]/,/^\[/s%^password[^=]\+=[[:space:]]\+%%p" "$passwd_file")
+
+	if [ $debug -eq 1 ] ; then
+		echo "pass root Mysql:"$passwd
+	fi
+
+	return 0	
+}
+
+do_write_passSql() {
+	local sqlQuery
+	
+	if mysql_version_upper; then
+	    sqlQuery="UPDATE mysql.user SET authentication_string=PASSWORD('$passwd'),plugin='mysql_native_password',password_expired='N' WHERE User='root'; "
+	    # NEED TO CHANGE AUTH PLUGIN abobe fails when --skip-grant-tables
+	    #sqlQuery="ALTER USER 'root'@'localhost' IDENTIFIED WITH mysql_native_password BY '$passwd'; "
+	    
+	else
+	    sqlQuery="UPDATE mysql.user SET Password=PASSWORD('$passwd') WHERE User='root'; "
+	fi
+        SQLQUERY_UPDATE=$sqlQuery"FLUSH PRIVILEGES;"
+
+	return 0
+}
+
+do_write_mycnf(){
+	echo -e "[mysql]"
+	echo -e "user       = "$user
+	echo -e "password   = "$passwd
+	echo -e ""
+	echo -e "[mysqladmin]"
+	echo -e "user       = "$user
+	echo -e "password   = "$passwd
+	echo -e ""
+	echo -e "[mysqldump]"
+	echo -e "user       = "$user
+	echo -e "password   = "$passwd
+
+	return 0
+}
+
+do_write_utf8_cnf(){
+	echo -e "[mysqld]"
+	echo -e "character-set-server=utf8"
+	echo -e "collation-server=utf8_general_ci"
+	echo -e "init-connect='SET NAMES utf8'"
+	echo -e ""
+	echo -e "[client]"
+	echo -e "default-character-set=utf8"
+	echo -e ""
+	
+	return 0
+}
+
+do_create_utf8_cnf(){
+	
+	do_write_utf8_cnf > "$utf8_cnf"
+	return 0
+	
+}
+
+is_mycnf_present(){
+	if [ ! -e "$passwd_file" ] ; then
+		# root my.cnf file does not exists
+		# generate password for root
+		return 1
+	fi
+
+	return 0
+}
+
+is_utf8_present(){
+	if [ ! -e "$utf8_cnf" ] ; then
+		return 1
+	fi
+
+	return 0
+}
+
+on_systemd(){
+    local ret=1
+
+    tst=$(which systemd)
+    if [ -n $tst ]; then 
+	ret=0
+    fi
+    if [ $debug -eq 1 ]; then 
+	if [ $ret -eq 0 ]; then
+	    echo "I'm on a systemd system"
+	else
+	    echo "I'm not on a systemd system"
+	fi
+    fi
+    
+    return $ret
+}
+mysql_process(){
+	local timeout
+
+	if [ $debug -eq 1 ] ; then
+		echo "************************entering mysql mode "$1
+	fi 	
+
+	case "$1" in
+		"start")
+			if [ $debug -eq 1 ] ; then
+				echo "arrancando"
+			fi
+			if on_systemd; then
+			    #sometimes when isn't fully systemd service fails if not is stopped before 
+			    systemctl stop mysql >/dev/null 2>/dev/null || true
+			    systemctl $1 mysql >/dev/null 2>/dev/null || true
+			else
+			    service mysql stop >/dev/null 2>/dev/null || true
+			    service mysql $1 >/dev/null 2>/dev/null || true
+			fi
+			timeout=0
+			while  true  ; do
+				is_mysql_alive || true 
+				if [ $alive -eq 0 ] ; then break ; fi
+				if [ $timeout -eq $limit ] ; then
+					echo "Error al arrancar"
+					exit 1
+				fi
+				timeout=$(($timeout+1))
+				sleep 1
+				if [ $debug -eq 1 ] ; then
+					echo "time out: "$timeout	
+				fi	
+			done
+			if [ $debug -eq 1 ] ; then
+				echo "arrancado"
+			fi
+		;;
+		"stop")
+			if [ $debug -eq 1 ] ; then
+				echo "parando"
+			fi
+			if on_systemd; then
+			    systemctl $1 mysql >/dev/null 2>/dev/null || true
+			else
+			    service mysql $1 >/dev/null 2>/dev/null || true
+			fi
+
+			killall -TERM mysqld_safe mysqld >/dev/null 2>/dev/null || true
+			sleep 1
+			killall -KILL mysqld_safe mysqld >/dev/null 2>/dev/null || true
+			timeout=0
+			while  true  ; do
+				is_mysql_alive || true 
+				if [ $alive -eq 1 ] ; then break ; fi
+				if [ $timeout -eq $limit ] ; then
+					echo "Error al parar"
+					exit 1
+				fi
+				timeout=$(($timeout+1))
+				sleep 1
+				if [ $debug -eq 1 ] ; then
+					echo "time out: "$timeout	
+				fi
+			done
+			if [ $debug -eq 1 ] ; then
+				echo "parado"
+			fi
+			;;
+		*)	echo "Error en param"
+			;;
+	esac
+	return 0
+}
+
+mysql_safe_process(){
+	local timeout
+
+	if [ $debug -eq 1 ] ; then
+		echo "+++++++++++++++++++++++entering mysql safe mode "$1
+	fi 	
+
+	case "$1" in
+		"start")
+			if [ $debug -eq 1 ] ; then
+				echo "arrancando"
+			fi
+			#Check if paths are OK
+			[ -d /var/run/mysqld ] || mkdir /var/run/mysqld && chmod 700 /var/run/mysqld && chown mysql:mysql /var/run/mysqld
+			/usr/bin/mysqld_safe --skip-grant-tables >/dev/null 2>/dev/null &
+			timeout=0
+			while  true  ; do
+				is_mysql_alive || true 
+				if [ $alive -eq 0 ] ; then break ; fi
+				if [ $timeout -eq $limit ] ; then
+					echo "Error al arrancar safe"
+					exit 1
+				fi
+				timeout=$(($timeout+1))
+				sleep 1
+				if [ $debug -eq 1 ] ; then
+					echo "time out: "$timeout
+				fi
+					
+			done
+			if [ $debug -eq 1 ] ; then
+				echo "arrancado"
+			fi
+		;;
+		"stop")
+			if [ $debug -eq 1 ] ; then
+				echo "parando"
+			fi
+			killall -TERM  mysqld_safe mysqld >/dev/null 2>/dev/null >/dev/null || true
+			sleep 1
+			killall -KILL  mysqld_safe mysqld >/dev/null 2>/dev/null >/dev/null || true
+			timeout=0
+			while  true  ; do
+				is_mysql_alive || true 
+				if [ $alive -eq 1 ] ; then break ; fi
+				if [ $timeout -eq $limit ] ; then
+					echo "Error al parar safe"
+					exit 1
+				fi
+				if [ $timeout -gt 1 ] ; then
+				    if on_systemd; then
+					systemctl start mysql >/dev/null 2>/dev/null ||true
+					systemctl stop mysql >/dev/null 2>/dev/null ||true
+				    else
+					service mysql start >/dev/null 2>/dev/null || true
+					service mysql stop >/dev/null 2>/dev/null || true
+				    fi
+				fi
+				timeout=$(($timeout+1))
+				killall -TERM  mysqld_safe mysqld >/dev/null 2>/dev/null >/dev/null || true
+				sleep 1
+				killall -KILL  mysqld_safe mysqld >/dev/null 2>/dev/null >/dev/null || true
+				if [ $debug -eq 1 ] ; then
+					echo "time out: "$timeout
+				fi
+			done
+			if [ $debug -eq 1 ] ; then
+				echo "parado"
+			fi
+			;;
+		*)	echo "Error en param"
+			;;
+	esac
+	return 0
+}
+
+test_password(){
+	#with sudo always test passwd is ok, must use other user than root
+	if sudo --user nobody mysql -u $user -p$passwd < $sqltest 2>/dev/null; then
+		if [ $debug -eq 1 ] ; then
+			echo "test passwd ok"
+		fi 
+		#rm -f $sqltest
+		return 0
+	fi
+	return 1
+}
+
+configure (){
+
+	need_restart=0
+
+	if ! is_utf8_present; then
+		do_create_utf8_cnf
+		need_restart=1
+		
+	fi
+		
+
+	if is_mycnf_present && is_mysql_alive ; then
+		do_get_passwd
+		if test_password ; then
+			if [ $debug -eq 1 ] ; then
+				echo "initial test passed. exit"
+			fi
+			
+			if [ $need_restart -eq 1 ]; then
+			    if on_systemd; then
+				systemctl restart mysql
+			    else
+				service mysql restart
+			    fi
+			fi
+			
+			exit 0
+		fi	
+	fi
+
+	mysql_safe_process stop 2>/dev/null
+	mysql_process start 2>/dev/null
+
+	if is_mycnf_present ; then
+		# If my.cnf file exists then sync in mysql
+		do_get_passwd
+		if [ $debug -eq 1 ] ; then
+			echo "mycnf_present"
+		fi 
+	else
+		# If not present my.cnf then we create a passwd
+		# and a my.cnf file
+		do_create_passwd
+		if [ $debug -eq 1 ] ; then
+			echo "mycnf_not_present"
+		fi 
+	fi
+
+	# Test mysql password
+	if is_mysql_alive ; then
+		if [ $debug -eq 1 ] ; then
+			echo "mysql alive"
+		fi 
+		if test_password ; then
+			exit 0
+		fi
+		if [ $debug -eq 1 ] ; then
+			echo "Mysql password not synced with mycnf file"
+		fi 
+	else
+		echo " * Mysql database server is not running"
+		exit 0
+	fi
+
+	echo " * Mysql database server running, setting Safe Mode"
+
+	mysql_process stop 2>/dev/null
+
+	if [ $debug -eq 1 ] ; then	
+		if is_mysql_alive ; then
+			echo "mysqld not killed"
+		fi
+	fi
+	# Mysql is started in safe mode
+
+	mysql_safe_process start 2>/dev/null
+
+	if [ $debug -eq 1 ] ; then
+		echo "mysql_safe mode"
+	fi
+
+	if is_mysql_alive ; then
+		# Sql statement to set password created
+		do_write_passSql
+		sqlTemp=$SQLQUERY_UPDATE
+		# Password is assigned in mysql 
+		if [ $debug -eq 1 ] ; then
+			echo $sqlTemp
+		fi
+		echo "$sqlTemp" | mysql 		
+		echo " * Mysql root password assigned"
+	else
+		echo " * Mysql root password cannot be assigned"
+		echo " * Root password assigment deferred to next execution of this utility"
+		echo "   or next reboot of the machine"
+		exit 1
+	fi
+
+	mysql_safe_process stop 2>/dev/null
+	
+	mysql_process start
+
+	return 0
+}
+
+# main
+if [[ $EUID -ne 0 ]]; then
+   echo "This script must be run as root" 1>&2
+   exit 1
+fi
+
+if [ $# -eq 2 ] ; then
+	if [ $2 == "-d" ] ; then
+ 		debug=1
+ 	fi
+fi
+
+
+case "$1" in
+	"-a"|"--alive_mysql")
+		if is_mysql_alive ; then
+			echo "YES"
+		else
+			echo "NO"
+		fi
+		;;
+	"-i"|"--initialize")
+		configure
+		;;
+	"-g"|"--get_password")
+		do_get_passwd
+		echo $passwd
+		;;
+	"-p"|"--present_mycnf")
+		if is_mycnf_present ; then
+			echo "YES"
+		else
+			echo "NO"
+		fi
+		;;
+	*)	echo "usage:  mysql_root_passwd -a (--alive_mysql) | -i (--initialize) | -g (--get_password) | -p (--present_mycnf)"
+		;;
+esac
+
+exit 0

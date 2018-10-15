@@ -1,0 +1,25 @@
+#!/bin/bash
+
+# include debconf (functions and api)
+# /var/cache/debconf/config.dat (debconf database)
+# more info in www.iwata.gr.jp/doc/debconf/tutorial.html
+
+
+. /usr/share/debconf/confmodule
+
+TEMPLATE=$1
+
+db_fset $TEMPLATE"/purge" isdefault true
+# another option is:
+#db_fset $TEMPLATE"/purge" seen false #unset answer
+db_set $TEMPLATE"/purge" false #set default answer value
+db_input high $TEMPLATE"/purge" || true #prepare question
+db_go || true # launch question
+db_get $TEMPLATE"/purge"
+if [ "x$RET" = "xtrue" ]; then
+	exit 1
+else
+	exit 0
+fi;
+
+exit 0

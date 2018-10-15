@@ -1,0 +1,400 @@
+#!/bin/bash
+###########################################################
+#
+# This script helps to manage dbase installation and upgrade 
+# include functionalies such as dbbackup, translation templates
+# dbuser creation, ...
+#
+###########################################################
+# OPTIONS
+#
+# --config package_name  -> generate a configfile to indicate database, dbuser , ... to be created
+# --template package_name -> generate a template file to personalize questions during instalation
+# --install package_name -> create database, dbuser, inject data, ... especified in configfile
+# --upgrade package_name -> used to preserve database during package upgrade (backup)
+# --remove package_name -> remove dbinclude file but preserve database
+# --purge package_name -> remove dbinclude file and database
+# --inject_sql package_name sql_file_with_path -> inject additional data in database
+# --is_include_present -> check if include file exists
+# --add_include_file -> create include file
+# --db_is_present -> check if database exists
+# --sql_mode -> change sql_mode variable to correct perfomance
+###########################################################
+
+PACKAGE_NAME=$2
+DEFAULT_SAMPLES_PATH="/usr/share/lliurex-sgbd/"
+CONFIG_FILE_PATH="/etc/lliurex-sgbd/"
+CONFIG_FILE=$CONFIG_FILE_PATH$PACKAGE_NAME".sgbd"
+
+DB_USER_PASS="`pwgen --capitalize --numerals 7 1`"
+
+INCLUDE_DB_FILE="debian-db.php"
+TEMPLATE="lliurex-sgbd"
+DB_IS_IN_MYSQL="NO"
+TEST=0
+
+debug=0
+NOW=$(date +"%Y.%m.%d.%H.%M")
+
+read_config_file(){
+        if [ -e $CONFIG_FILE ]; then
+		DB_NAME=$(sed -ne "/^\[parameters\]/,/^\[/s%^DB_NAME[^=]\+=[[:space:]]\+%%p" "$CONFIG_FILE")
+		DB_USER=$(sed -ne "/^\[parameters\]/,/^\[/s%^DB_USER[^=]\+=[[:space:]]\+%%p" "$CONFIG_FILE")
+		DB_PASS=$(sed -ne "/^\[parameters\]/,/^\[/s%^DB_PASS[^=]\+=[[:space:]]\+%%p" "$CONFIG_FILE")
+		MYSQL_DATA_FILE=$(sed -ne "/^\[parameters\]/,/^\[/s%^MYSQL_DATA_FILE[^=]\+=[[:space:]]\+%%p" "$CONFIG_FILE")
+		INCLUDE_PATH=$(sed -ne "/^\[parameters\]/,/^\[/s%^INCLUDE_PATH[^=]\+=[[:space:]]\+%%p" "$CONFIG_FILE")
+		BACKUP_PATH=$(sed -ne "/^\[parameters\]/,/^\[/s%^BACKUP_PATH[^=]\+=[[:space:]]\+%%p" "$CONFIG_FILE")
+		USE_TEMPLATE=$(sed -ne "/^\[parameters\]/,/^\[/s%^USE_TEMPLATE[^=]\+=[[:space:]]\+%%p" "$CONFIG_FILE")
+		if [ "$USE_TEMPLATE" = "YES" ] ; then
+			TEMPLATE=$PACKAGE_NAME
+		fi
+		DB_PASS=$(echo $DB_PASS | tr -d ' ')
+	
+		if [ "$DB_PASS" != "" ] ; then
+			DB_USER_PASS=$DB_PASS
+		fi
+
+		INCLUDE_FILE=$INCLUDE_PATH/$INCLUDE_DB_FILE
+		return 0
+	else
+		logger -s -t lliurex-sgbd "Config file for database not found!!, expecting ${CONFIG_FILE}"
+		return 1
+	fi
+}
+
+read_include_file(){
+
+	if [ -e "/etc/"$DB_NAME"/"$INCLUDE_DB_FILE ]; then
+	       
+		DB_USER_PASS=$(cat "/etc/"$DB_NAME"/"$INCLUDE_DB_FILE |perl -nE "say for /dbpass=\'(.*)\';/")
+		
+	fi
+}
+
+inject_sql_file(){
+	cat $1 | mysql -u root -p$MYSQL_ROOT_PASS $DB_NAME
+}
+
+create_database(){
+	mysql -u root -p$MYSQL_ROOT_PASS -e "CREATE DATABASE $DB_NAME DEFAULT CHARACTER SET utf8 DEFAULT COLLATE utf8_general_ci;"
+	if [ ! -z $MYSQL_DATA_FILE ]; then
+		inject_sql_file $MYSQL_DATA_FILE
+	fi
+}
+
+create_user(){
+	local sqlQuery
+	sqlQuery="GRANT ALL ON $DB_NAME.* TO $DB_USER@localhost IDENTIFIED BY '$DB_USER_PASS'; "
+	sqlQuery=$sqlQuery"FLUSH PRIVILEGES;"
+	mysql -u root -p$MYSQL_ROOT_PASS -e "$sqlQuery"
+}
+
+mysql_version_upper(){
+    local ret=1;
+    ver=$(mysqld --version 2>&1|egrep -o '\ [0-9]+\.[0-9]+\.[0-9]+')
+    is_maria=$(mysqld --version 2>&1|grep -io 'mariadb'|wc -l)
+    if [ $is_maria -gt 0 ]; then
+        type_db='maria';
+    else
+        type_db='mysql';
+    fi
+    
+    if [ "$type_db" = "maria" ]; then 
+        ret=0
+    else
+        if dpkg --compare-versions $ver gt "5.7.6"; then ret=0; fi;
+    fi
+
+
+    if [ $debug -eq 1 ]; then
+        if [ $ret -eq 0 ]; then
+            echo "Compare versions: Detected $type_db version $ver (mysql > 5.7.6 new user tables)"
+        else
+            echo "Compare versions: Detected $type_db version $ver (mysql < 5.7.6)"
+        fi
+    fi
+
+    return $ret
+}
+
+update_passwd() {
+        local sqlQuery
+        
+        if mysql_version_upper; then
+            #sqlQuery="UPDATE mysql.user SET authentication_string=PASSWORD('$passwd'),plugin='mysql_native_password',password_expired='N' WHERE User='root'; "
+            #sqlQuery="UPDATE mysql.user SET authentication_string=PASSWORD('$DB_USER_PASS'),plugin='mysql_native_password',password_expired='N' WHERE User='$DB_USER'; "
+	    sqlQuery="UPDATE mysql.user SET authentication_string=PASSWORD('$DB_USER_PASS'),plugin='mysql_native_password' WHERE User='$DB_USER'; "
+
+	
+	else
+#            sqlQuery="UPDATE mysql.user SET Password=PASSWORD('$passwd') WHERE User='root'; "
+            sqlQuery="UPDATE mysql.user SET Password=PASSWORD('$DB_USER_PASS') WHERE User='$DB_USER'; "
+        fi
+        sqlQuery=$sqlQuery"FLUSH PRIVILEGES;"
+
+	mysql -u root -p$MYSQL_ROOT_PASS -e "$sqlQuery"
+}
+
+create_include_file(){
+	if [ ! -d  $INCLUDE_PATH ] ; then
+		mkdir $INCLUDE_PATH
+	fi
+	fecha=$(date)
+	echo "Creating include file: $INCLUDE_FILE"
+	echo "<?php"> $INCLUDE_FILE
+	echo "##">> $INCLUDE_FILE
+	echo "## database access settings in php format ">> $INCLUDE_FILE
+	echo "## automatically generated by lliurex-sgbd ">> $INCLUDE_FILE
+	echo "## on "$fecha >> $INCLUDE_FILE
+	echo "## ">> $INCLUDE_FILE
+	echo "\$dbuser='$DB_USER'; ">> $INCLUDE_FILE
+	echo "\$dbpass='$DB_USER_PASS'; ">> $INCLUDE_FILE
+	echo "\$basepath=''; ">> $INCLUDE_FILE
+	echo "\$dbname='$DB_NAME'; ">> $INCLUDE_FILE
+	echo "\$dbserver=''; ">> $INCLUDE_FILE
+	echo "\$dbport=''; ">> $INCLUDE_FILE
+	echo "\$dbtype='mysql'; ">> $INCLUDE_FILE
+	chmod 640 $INCLUDE_FILE || true
+	chgrp www-data $INCLUDE_FILE || true
+}
+
+database_backup(){
+	if [ ! -d  $BACKUP_PATH ] ; then
+		mkdir -p $BACKUP_PATH
+	fi
+	#NOW=$(date +"%Y.%m.%d.%H.%M")	
+	echo "Doing database backup: $BACKUP_PATH/backup.$NOW.sql"
+	mysqldump -u root -p$MYSQL_ROOT_PASS $DB_NAME > $BACKUP_PATH"/backup."$NOW".sql" 2>/dev/null
+}
+
+install_db(){
+	if [ $TEST -ne 0 ] ; then
+		# Existe la base de datos. Hacer copia base de datos"
+		database_backup
+		lliurex-sgbd-purge-question
+		if [ "$RET" = "true" ] ; then
+			mysql -u root -p$MYSQL_ROOT_PASS -e "DROP DATABASE $DB_NAME;"
+			create_database
+		fi
+	else
+		# No existe la base de datos
+		create_database
+	fi
+
+	SENTENCIA="SELECT user from mysql.user where user='$DB_USER'"
+	TEST=$(mysql -u root -p$MYSQL_ROOT_PASS -e "$SENTENCIA" | wc -l)
+
+	if [ $TEST -ne 0 ] ; then
+		# Existe usuario. Mantener usuario y cambiar contraseña
+		update_passwd
+	else
+		create_user
+	fi		
+}
+
+create_template_file(){
+	echo "Template: "$PACKAGE_NAME"/purge">> $NEW_TEMPLATE_FILE
+	echo "Type: boolean ">> $NEW_TEMPLATE_FILE
+	echo "Description: Do you want to purge "$PACKAGE_NAME"'s database?" >> $NEW_TEMPLATE_FILE
+	echo "Description-es.UTF-8: ¿Desea eliminar la base de datos de "$PACKAGE_NAME"?">> $NEW_TEMPLATE_FILE
+	echo "Description-qcv.UTF-8: Desitja eliminar la base de dades de "$PACKAGE_NAME"?">> $NEW_TEMPLATE_FILE
+}
+
+get_config_data(){
+	local nolog=0;
+	if [ "x$1" = "xnolog" ]; then
+		nolog=1
+	fi
+	if [[ $EUID -ne 0 ]]; then
+	   echo "This script must be run as root" 1>&2
+	   exit 1
+	fi
+
+	mysql_root_passwd --initialize
+	if [ $? -ne 0 ] ; then
+		echo "Error en mysql_root_passwd"
+		exit 1
+	fi
+	MYSQL_ROOT_PASS=$(mysql_root_passwd -g)
+	
+	rc=0
+	read_config_file
+	if [ $? -eq 1 ]; then
+		logger -s -t lliurex-sgbd "Trying to find '$PACKAGE_NAME' as DB_NAME"
+		local DB_NAME
+		DB_NAME=$PACKAGE_NAME
+	fi 
+	read_include_file
+	#old method: TEST=$(mysqlshow -u root -p$MYSQL_ROOT_PASS | grep " "$DB_NAME" " | wc -l)
+	#new method
+	mysql -u root -p${MYSQL_ROOT_PASS}  -e "show databases" | egrep ^$DB_NAME\$ >/dev/null|| rc=1
+
+	if [ ${rc} -eq 0 ]; then
+		if [ $nolog -ne 1 ]; then
+			logger -s -t lliurex-sgbd "Database '$DB_NAME' FOUND "
+		fi
+		DB_IS_IN_MYSQL="YES"
+		touch /tmp/db_is_present
+		TEST=1
+	else
+		if [ $nolog -ne 1 ]; then
+			logger -s -t lliurex-sgbd "Database '$DB_NAME' NOT found!"
+		fi
+		DB_IS_IN_MYSQL="NO"
+		TEST=0
+	fi
+}
+
+edit_sql_mode(){
+	MYSQLCNF_PATH="/etc/mysql/mysql.cnf"
+	MYSQLCNF_DIR=$(dirname ${MYSQLCNF_PATH})
+	SQLCONFIG_NEW='sql_mode="NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_AUTO_CREATE_USER,NO_ENGINE_SUBSTITUTION"'
+
+    if [ -f ${MYSQLCNF_PATH}  ]; then
+    	SQLCONFIG_OLD=$(sed -e '/sql_mode'/!d ${MYSQLCNF_PATH})
+       
+        if [ -z ${SQLCONFIG_OLD} ]; then
+
+        	echo "Doing backup of file ${MYSQLCNF_PATH}"
+        	cp ${MYSQLCNF_PATH} ${MYSQLCNF_DIR}"/mysql_"${NOW}".cnf"
+        	echo "Adding sql_mode in file ${MYSQLCNF_PATH}"
+        	MYSQLD=$(sed -e '/mysqld'/!d ${MYSQLCNF_PATH})
+        	if [ -z ${MYSQLD} ]; then
+        		sed -i '$a[mysqld]' ${MYSQLCNF_PATH}
+        	fi	
+        	sed -i '$a'${SQLCONFIG_NEW} ${MYSQLCNF_PATH}
+            systemctl restart mysql 
+        else
+        	if [[ ${SQLCONFIG_OLD} == ${SQLCONFIG_NEW} ]]; then
+
+        		echo "NOTHING TO DO. File ${MYSQLCNF_PATH} already update"
+        	else
+        		echo "Doing backup of file ${MYSQLCNF_PATH}"
+        		cp ${MYSQLCNF_PATH} ${MYSQLCNF_DIR}"/mysql_"${NOW}".cnf"
+        		echo "Adding new sql_mode configuration in file ${MYSQLCNF_PATH}"
+        		MYSQLD=$(sed -e '/mysqld'/!d ${MYSQLCNF_PATH})
+        		if [ -z ${MYSQLD} ]; then
+        			sed -i '$a[mysqld]' ${MYSQLCNF_PATH}
+        		fi	
+        		sed -i 's/'${SQLCONFIG_OLD}'/'${SQLCONFIG_NEW}'/g' ${MYSQLCNF_PATH}
+        		systemctl restart mysql
+        	fi		
+        fi
+    else
+    	echo "NOTHING TO DO. File ${MYSQLCNF_PATH} NOT FOUND"	
+    fi	
+}
+
+usage (){
+	echo "usage:  lliurex-sgbd --config package_name | --template package_name | --install package_name  | --upgrade package_name | --remove package_name | --purge package_name | --inject_sql package_name sql_file_with_path | --db_is_present package_name | --add_include_file package_name | --is_include_present package_name | --sql_mode package_name"
+}
+
+#main
+
+if [ $# -eq 0 ] ; then
+	usage 
+	exit 1
+fi
+
+if [ $# -lt 2 ] ; then
+	echo ""
+	echo "Wrong parameters number!!"
+	echo ""
+	usage 
+	exit 1
+fi
+
+case $1 in 
+	--config) # generate config file
+		NEW_CONFIG_FILE=`pwd`"/"$PACKAGE_NAME".sgbd"
+		cp $DEFAULT_SAMPLES_PATH"sample.sgbd" $NEW_CONFIG_FILE
+		echo "generated file "$NEW_CONFIG_FILE", after modify, please move to /etc/lliurex-sgbd"
+	;;
+	--template) # generate questions template
+		NEW_TEMPLATE_FILE=`pwd`"/"$PACKAGE_NAME".templates"
+		create_template_file
+		echo ""
+		echo "generated file "$NEW_TEMPLATE_FILE" remember to move it to your package debian directory"
+		echo "and execute debconf-gettextize debian/"$PACKAGE_NAME".templates"
+		echo "After that, remove obsolete files: master.old and localized templates (ie, templates.xx)"
+		echo ""
+		echo "More info: http://manpages.ubuntu.com/manpages/dapper/man7/po-debconf.7.html"
+		echo ""
+	;;
+	--install) # install new database
+		get_config_data nolog
+		install_db
+		create_include_file
+		echo "Install complete"
+	;;
+	--upgrade) # upgrade database
+		get_config_data
+		if [ $TEST -ne 0 ] ; then
+			# Existe la base de datos. Hacer copia base de datos"
+			update_passwd
+			database_backup
+		fi
+		#si por algún motivo se ha perdido la configuració se vuelve a crear
+		if [ ! -e $INCLUDE_FILE ] ; then
+			create_include_file
+		fi
+	;;
+	--remove)
+		get_config_data
+		if [ -e $INCLUDE_FILE ] ; then
+			rm -f $INCLUDE_FILE
+		fi
+	;;
+	--purge)
+		get_config_data nolog
+		if [ $TEST -eq 0 ]; then
+			echo "Database not found, exiting"
+			exit 1
+		fi
+		/usr/sbin/lliurex-sgbd-purge-question $TEMPLATE
+		if [ $? -ne 0 ] ; then
+			# Existe la base de datos. Hacer copia base de datos"
+			database_backup
+			mysql -u root -p$MYSQL_ROOT_PASS -e "DROP DATABASE $DB_NAME;" 2>/dev/null
+			mysql -u root -p$MYSQL_ROOT_PASS -e "DROP USER $DB_USER@localhost;" 2>/dev/null
+			mysql -u root -p$MYSQL_ROOT_PASS -e "flush privileges;" 2> /dev/null
+		fi
+
+		if [ -e $INCLUDE_FILE ] ; then
+			rm -f $INCLUDE_FILE
+		fi
+		echo "Purge complete"
+	;;
+	--inject_sql)
+		get_config_data
+		inject_sql_file $3
+	;;
+	--is_include_present)
+		get_config_data > /dev/null
+		if [ -e $INCLUDE_FILE ] ; then
+			echo "YES"
+		else
+			echo "NO"
+		fi
+	;;
+	--add_include_file)
+		get_config_data
+		create_include_file
+	;;
+	--db_is_present)
+		[ ! -e /tmp/db_is_present ] ||  rm -f /tmp/db_is_present
+		get_config_data #> /dev/null
+		echo "$DB_IS_IN_MYSQL"
+	;;
+
+	--sql_mode)
+		edit_sql_mode
+	;;	
+
+	*)
+		usage
+	;;
+esac
+
+exit 0
+
