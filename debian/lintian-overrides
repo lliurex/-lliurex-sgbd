@@ -1,0 +1,3 @@
+lliurex-sgbd: binary-without-manpage usr/sbin/mysql_root_passwd
+lliurex-sgbd: init.d-script-possible-missing-stop etc/init.d/lliurex-sgbd 1
+lliurex-sgbd: init.d-script-does-not-provide-itself /etc/init.d/lliurex-sgbd

@@ -1,0 +1,15 @@
+Source: lliurex-sgbd
+Section: admin
+Priority: optional
+Maintainer: Equipo LliureX <lliurex@gva.es>
+Uploaders: Equipo LliureX <lliurex@gva.es>
+Build-Depends: debhelper (>= 10)
+Standards-Version: 4.1.2
+
+Package: lliurex-sgbd
+Architecture: all
+Depends:${misc:Depends}, virtual-mysql-server, pwgen, mysql-tuneup
+Description: Several utilities to create and manage mysql databases.
+ mysql_root_password: initializate, sync or create mysql root password.
+ lliurex-sgbd: create databases, dbusers, and inyect data according 
+ a given template. 

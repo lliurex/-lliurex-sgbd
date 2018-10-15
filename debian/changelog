@@ -1,0 +1,617 @@
+lliurex-sgbd (0.74-lliurex3) xenial; urgency=medium
+
+  * Fixed pmb and moodle db user pasword when a backup is restored
+
+ -- Juan Ramon Pelegrina <juapesai@hotmail.com>  Tue, 20 Jun 2017 17:45:32 +0200
+
+lliurex-sgbd (0.74-lliurex2) xenial; urgency=medium
+
+  * Added mysql-tuneup dependency
+
+ -- Juanma Navarro Mañez <juanma1980@gmail.com>  Tue, 07 Mar 2017 08:34:08 +0100
+
+lliurex-sgbd (0.74-lliurex1) xenial; urgency=medium
+
+  * Fixed update_passwd in lliurex-sgdb mysql version<5.7
+
+ -- Juanma Navarro Mañez <juanma1980@gmail.com>  Fri, 03 Mar 2017 12:20:05 +0100
+
+lliurex-sgbd (0.74) xenial; urgency=medium
+
+  * Fixed update_passwd in lliurex-sgdb
+
+ -- Juanma Navarro Mañez <juanma1980@gmail.com>  Fri, 03 Mar 2017 12:01:27 +0100
+
+lliurex-sgbd (0.73) xenial; urgency=medium
+
+  * Check if /var/run/mysqld exists before launch safe mode
+
+ -- Juanma Navarro Mañez <juanma1980@gmail.com>  Thu, 02 Mar 2017 14:14:25 +0100
+
+lliurex-sgbd (0.72) xenial; urgency=medium
+
+  * Fix bug comparing versions
+
+ -- M.Angel Juan <m.angel.juan@gmail.com>  Tue, 22 Nov 2016 13:54:18 +0100
+
+lliurex-sgbd (0.71-lliurex4) xenial; urgency=medium
+
+  * Add mysqld header if not exist (mysqld.cnf) when change sql_mode
+
+ -- lliurex <lliurex@lliurexVirtualBox>  Fri, 27 May 2016 08:13:12 +0200
+
+lliurex-sgbd (0.71-lliurex3) xenial; urgency=medium
+
+  * Add a function to change sql_mode
+
+ -- Juan Ramon Pelegrina <juapesai@hotmail.com>  Thu, 26 May 2016 11:58:30 +0200
+
+lliurex-sgbd (0.71-lliurex2) xenial; urgency=medium
+
+  * Add debug flag to lliurex-sgdb
+
+ -- M.Angel Juan <m.angel.juan@gmail.com>  Fri, 29 Apr 2016 14:00:28 +0200
+
+lliurex-sgbd (0.71-lliurex1) xenial; urgency=medium
+
+  * Support for mariadb
+
+ -- M.Angel Juan <m.angel.juan@gmail.com>  Thu, 28 Apr 2016 10:11:47 +0200
+
+lliurex-sgbd (0.71) xenial; urgency=medium
+
+  * New methods to set password for mysql > 5.7.6
+
+ -- M.Angel Juan <m.angel.juan@gmail.com>  Wed, 27 Apr 2016 13:41:28 +0200
+
+lliurex-sgbd (0.70) xenial; urgency=medium
+
+  * Ported from trusty code
+
+ -- M.Angel Juan <m.angel.juan@gmail.com>  Mon, 01 Feb 2016 13:52:18 +0100
+
+lliurex-sgbd (0.63) trusty; urgency=high
+
+  * Fix bug when initializing
+
+ -- Miguel Angel <m.angel.juan@gmail.com>  Mon, 09 Nov 2015 11:10:54 +0100
+
+lliurex-sgbd (0.62) trusty; urgency=medium
+
+  * Fixed: Clean messages from application, removed extra log lines from mysql_root_passwd initialization
+  * Fixed: Fixed debconf questions
+  * Fixed: Generalize option -db_is_present, allows any database not only pmb
+  * Fixed: allow not terminated config values with slashes in configs paths, now backups are stored in correct place
+  * Fixed: Do not try to purge non-existent database
+
+ -- root <m.angel.juan@gmail.com>  Mon, 26 Oct 2015 14:15:00 +0100
+
+lliurex-sgbd (0.61) trusty; urgency=high
+
+  * Updated to create a simple token in test db 
+
+ -- Angel Berlanas Vicente <angel.berlanas@gmail.com>  Tue, 09 Jun 2015 11:15:39 +0200
+
+lliurex-sgbd (0.60) trusty; urgency=high
+
+  * Updated
+
+ -- Angel Berlanas Vicente <angel.berlanas@gmail.com>  Thu, 04 Jun 2015 13:48:18 +0200
+
+lliurex-sgbd (0.59) trusty; urgency=high
+
+  * Added more tests 
+
+ -- Angel Berlanas Vicente <angel.berlanas@gmail.com>  Wed, 27 May 2015 10:44:19 +0200
+
+lliurex-sgbd (0.58) trusty; urgency=high
+
+  * Updated LOGIC 
+
+ -- Angel Berlanas Vicente <angel.berlanas@gmail.com>  Tue, 26 May 2015 13:14:58 +0200
+
+lliurex-sgbd (0.56) precise; urgency=high
+
+  * Added utf8 configuration. I'm not responsible of this package
+
+ -- Hector Garcia Huerta <hectorgh@gmail.com>  Thu, 29 May 2014 13:01:14 +0200
+
+lliurex-sgbd (0.55) precise; urgency=high
+
+  * Fixed responses output to discard not initialized mysql messages
+
+ -- Vicente Balaguer Domenech <vbalaguer.gva@gmail.com>  Fri, 29 Nov 2013 10:44:01 +0100
+
+lliurex-sgbd (0.54) precise; urgency=low
+
+  * Fixed call to purge question (lliurex-sgbd-purge-question)
+
+ -- Vicente Balaguer Domenech <vbalaguer.gva@gmail.com>  Thu, 28 Nov 2013 14:00:14 +0100
+
+lliurex-sgbd (0.53) precise; urgency=low
+
+  * Modified upgrade option to check if include file exists
+
+ -- Vicente Balaguer Domenech <vbalaguer.gva@gmail.com>  Tue, 29 Oct 2013 09:55:21 +0100
+
+lliurex-sgbd (0.52) precise; urgency=low
+
+  * Added options to manage include file
+
+ -- Vicente Balaguer Domenech <vbalaguer.gva@gmail.com>  Mon, 28 Oct 2013 10:13:48 +0100
+
+lliurex-sgbd (0.51) precise; urgency=low
+
+  * Isolating debconf from script to avoid error exits 
+
+ -- Jaime Munyoz Fayos <munyoz_jaifay@gva.es>  Fri, 04 Oct 2013 09:48:07 +0200
+
+lliurex-sgbd (0.50) precise; urgency=high
+
+  * Restored to previous version of lliurex-sgbd
+ 
+ -- Vicente Balaguer Domenech <vbalaguer.gva@gmail.com>  Thu, 03 Oct 2013 10:26:52 +0200
+
+lliurex-sgbd (0.49) precise; urgency=low
+
+  * Fix problem using echo with debconf 
+
+ -- Vicente Balaguer Domenech <vbalaguer.gva@gmail.com>  Tue, 01 Oct 2013 11:10:34 +0200
+
+lliurex-sgbd (0.48) precise; urgency=low
+
+  * Added DB_PASS (optional parameter) 
+
+ -- Jaime Munyoz Fayos <munyoz_jaifay@gva.es>  Mon, 30 Sep 2013 12:36:42 +0200
+
+lliurex-sgbd (0.47) precise; urgency=low
+
+  * Update lliurex-sgbd usage and info
+
+ -- Vicente Balaguer Domenech <vbalaguer.gva@gmail.com>  Mon, 23 Sep 2013 12:50:48 +0200
+
+lliurex-sgbd (0.46) precise; urgency=low
+
+  * Dummy version 
+
+ -- Jaime Munyoz Fayos <munyoz_jaifay@gva.es>  Mon, 23 Sep 2013 11:39:15 +0200
+
+lliurex-sgbd (0.45) precise; urgency=low
+
+  * Fixed template test 
+
+ -- Jaime Munyoz Fayos <munyoz_jaifay@gva.es>  Mon, 23 Sep 2013 10:21:48 +0200
+
+lliurex-sgbd (0.44) precise; urgency=low
+
+  * Added charset during database creation
+
+ -- Vicente Balaguer Domenech <vbalaguer.gva@gmail.com>  Fri, 13 Sep 2013 12:55:17 +0200
+
+lliurex-sgbd (0.43) precise; urgency=low
+
+  * Add new option to lliurex-sgdb to know if database exist
+
+ -- Vicente Balaguer Domenech <vbalaguer.gva@gmail.com>  Mon, 09 Sep 2013 12:55:37 +0200
+
+lliurex-sgbd (0.42) precise; urgency=low
+
+  * Created directory etc/lliurex-sgbd 
+
+ -- Jaime Munyoz Fayos <munyoz_jaifay@gva.es>  Thu, 20 Jun 2013 10:24:08 +0200
+
+lliurex-sgbd (0.41) precise; urgency=low
+
+  * Fixed no sql file to injection  
+
+ -- Jaime Munyoz Fayos <munyoz_jaifay@gva.es>  Mon, 06 May 2013 12:58:19 +0200
+
+lliurex-sgbd (0.40) precise; urgency=low
+
+  * Updated rules 
+
+ -- Vicente Balaguer Domenech <vbalaguer.gva@gmail.com>  Mon, 06 May 2013 07:57:48 +0200
+
+lliurex-sgbd (0.39) precise; urgency=low
+
+  * Updated architecture to 'any' 
+
+ -- Vicente Balaguer Domenech <vbalaguer.gva@gmail.com>  Fri, 03 May 2013 10:18:50 +0200
+
+lliurex-sgbd (0.38) precise; urgency=low
+
+  * Removed preinstall file
+
+ -- Vicente Balaguer Domenech <vbalaguer.gva@gmail.com>  Fri, 03 May 2013 08:06:48 +0200
+
+lliurex-sgbd (0.37) precise; urgency=low
+
+  * Added more usage information 
+
+ -- Vicente Balaguer Domenech <vbalaguer.gva@gmail.com>  Thu, 02 May 2013 13:21:51 +0200
+
+lliurex-sgbd (0.36) precise; urgency=low
+
+  * Fix owner group in database include file
+
+ -- Vicente Balaguer Domenech <vbalaguer.gva@gmail.com>  Thu, 25 Apr 2013 08:19:33 +0200
+
+lliurex-sgbd (0.35) precise; urgency=low
+
+  * Fix database include permisions
+
+ -- Vicente Balaguer Domenech <vbalaguer@gmail.com>  Tue, 23 Apr 2013 10:18:38 +0200
+
+lliurex-sgbd (0.34) precise; urgency=low
+
+  * Minor changes
+
+ -- Vicente Balaguer Domenech <vbalaguer@gmail.com>  Tue, 23 Apr 2013 09:19:15 +0200
+
+lliurex-sgbd (0.33) precise; urgency=low
+
+  * Fix database user privileges 
+
+ -- Vicente Balaguer Domenech <vbalaguer@gmail.com>  Mon, 22 Apr 2013 12:10:26 +0200
+
+lliurex-sgbd (0.32) precise; urgency=low
+
+  * Added purge question 
+
+ -- Jaime Munyoz Fayos <munyoz_jaifay@gva.es>  Thu, 04 Apr 2013 10:00:23 +0200
+
+lliurex-sgbd (0.31) precise; urgency=low
+
+  * Added default template 
+
+ -- Jaime Munyoz Fayos <munyoz_jaifay@gva.es>  Tue, 02 Apr 2013 09:33:58 +0200
+
+lliurex-sgbd (0.30) precise; urgency=low
+
+  * Added injected files funcionality 
+
+ -- Jaime Munyoz Fayos <munyoz_jaifay@gva.es>  Tue, 02 Apr 2013 09:04:23 +0200
+
+lliurex-sgbd (0.29) precise; urgency=low
+
+  * Added new functionality to manage databases from any package. 
+
+ -- Jaime Munyoz Fayos <munyoz_jaifay@gva.es>  Tue, 02 Apr 2013 08:48:10 +0200
+
+lliurex-sgbd (0.28) precise; urgency=low
+
+  * Added enhancement 
+
+ -- Jaime Munyoz Fayos <munyoz_jaifay@gva.es>  Tue, 02 Apr 2013 08:48:00 +0200
+
+lliurex-sgbd (0.27) precise; urgency=low
+
+  * Debug added 
+
+ -- Jaime Munyoz Fayos <munyoz_jaifay@gva.es>  Wed, 20 Mar 2013 12:12:14 +0100
+
+lliurex-sgbd (0.26) precise; urgency=low
+
+  * Debug options changed 
+
+ -- Jaime Munyoz Fayos <munyoz_jaifay@gva.es>  Wed, 20 Mar 2013 11:44:50 +0100
+
+lliurex-sgbd (0.25) precise; urgency=low
+
+  * Fixed errors on mysql_root_password 
+
+ -- Jaime Munyoz Fayos <munyoz_jaifay@gva.es>  Tue, 12 Mar 2013 12:37:17 +0100
+
+lliurex-sgbd (0.24) precise; urgency=low
+
+  * Deleted postinst and init files 
+
+ -- Jaime Munyoz Fayos <munyoz_jaifay@gva.es>  Mon, 11 Mar 2013 12:05:58 +0100
+
+lliurex-sgbd (0.23) precise; urgency=low
+
+  * Rewrite mysql_root_password
+  * Remove libmysql-java from dependences 
+
+ -- Jaime Munyoz Fayos <munyoz_jaifay@gva.es>  Mon, 11 Mar 2013 09:20:19 +0100
+
+lliurex-sgbd (0.22) precise; urgency=low
+
+  * Fixed ancient-standards-version 3.8.4 (current is 3.9.3) 
+
+ -- Jaime Munyoz Fayos <munyoz_jaifay@gva.es>  Mon, 10 Dec 2012 10:06:58 +0100
+
+lliurex-sgbd (0.21) precise; urgency=low
+
+  * Modified to accept new parameters 
+  * 
+
+ -- Jaime Munyoz Fayos <munyoz_jaifay@gva.es>  Mon, 10 Dec 2012 10:05:18 +0100
+
+lliurex-sgbd (0.20) precise; urgency=low
+
+  * Added parameters to script
+
+ -- Jaime Munyoz Fayos <munyoz_jaifay@gva.es>  Mon, 29 Oct 2012 09:51:43 +0100
+
+lliurex-sgbd (0.12) unstable; urgency=low
+
+  * Modified uploaders 
+
+ -- Jaime Munyoz Fayos <munyoz_jaifay@gva.es>  Wed, 25 Jan 2012 10:12:21 +0100
+
+lliurex-sgbd (0.11) unstable; urgency=low
+
+  * fix release
+
+ -- Ignacio Vidal Hurtado <vidal_joshur@gva.es>  Tue, 13 Dec 2011 13:54:57 +0100
+
+lliurex-sgbd (0.10) unstable; urgency=low
+
+  * fix mysqldump passwd 
+
+ -- Ignacio Vidal Hurtado <vidal_joshur@gva.es>  Tue, 13 Dec 2011 13:30:12 +0100
+
+lliurex-sgbd (0.9) unstable; urgency=low
+
+  * Uncomment Init Script
+
+ -- Angel Berlanas Vicente <lliurex_devel2@edu.gva.es>  Thu, 10 Mar 2011 17:20:17 +0100
+
+lliurex-sgbd (0.8) unstable; urgency=low
+
+  * Removed zero-script
+
+ -- Angel Berlanas Vicente <lliurex_devel2@edu.gva.es>  Thu, 10 Mar 2011 16:58:38 +0100
+
+lliurex-sgbd (0.7) unstable; urgency=low
+
+  * Added the final script for this mission:
+    - If the /root/.my.cnf not pressent, it's created
+      and randomize the password.
+    - If the /root/.my.cnf, checks the password and
+      fix it if necessary.
+    - If you want set a manual password on machine, please
+      put it on /root/.my.cnf.
+
+ -- Angel Berlanas Vicente <lliurex_devel2@edu.gva.es>  Tue, 08 Mar 2011 18:06:38 +0100
+
+lliurex-sgbd (0.6.12) unstable; urgency=low
+
+  * Another fix
+
+ -- Angel Berlanas Vicente <lliurex_devel2@edu.gva.es>  Tue, 08 Mar 2011 18:02:34 +0100
+
+lliurex-sgbd (0.6.11) unstable; urgency=low
+
+  * Fixed root permissions
+
+ -- Angel Berlanas Vicente <lliurex_devel2@edu.gva.es>  Tue, 08 Mar 2011 17:58:09 +0100
+
+lliurex-sgbd (0.6.10) unstable; urgency=low
+
+  * Added more logic
+  * Fixed rules
+
+ -- Angel Berlanas Vicente <lliurex_devel2@edu.gva.es>  Tue, 08 Mar 2011 16:56:50 +0100
+
+lliurex-sgbd (0.6.9) unstable; urgency=low
+
+  * Fixed
+
+ -- Angel Berlanas Vicente <lliurex_devel2@edu.gva.es>  Tue, 08 Mar 2011 16:55:36 +0100
+
+lliurex-sgbd (0.6.8) unstable; urgency=low
+
+  * Added binary, at zero-center-wizard to manage 
+    root password at mysql
+
+ -- Angel Berlanas Vicente <lliurex_devel2@edu.gva.es>  Tue, 08 Mar 2011 16:30:33 +0100
+
+lliurex-sgbd (0.6.6) unstable; urgency=low
+
+  * fix erroneous status from mysql
+
+ -- Ignacio Vidal Hurtado <vidal_joshur@gva.es>  Mon, 25 Oct 2010 21:23:34 +0200
+
+lliurex-sgbd (0.6.5) unstable; urgency=low
+
+  * another fix 
+
+ -- Ignacio Vidal Hurtado <vidal_joshur@gva.es>  Mon, 25 Oct 2010 21:06:21 +0200
+
+lliurex-sgbd (0.6.4) unstable; urgency=low
+
+  * minor fix 
+
+ -- Ignacio Vidal Hurtado <vidal_joshur@gva.es>  Mon, 25 Oct 2010 20:59:53 +0200
+
+lliurex-sgbd (0.6.3) unstable; urgency=low
+
+  * fix script for service mysql 
+
+ -- Ignacio Vidal Hurtado <vidal_joshur@gva.es>  Mon, 25 Oct 2010 19:28:17 +0200
+
+lliurex-sgbd (0.6.2) unstable; urgency=low
+
+  * fix script for service mysql 
+
+ -- Ignacio Vidal Hurtado <vidal_joshur@gva.es>  Mon, 25 Oct 2010 15:00:40 +0200
+
+lliurex-sgbd (0.6.1) unstable; urgency=low
+
+  * New First Leia Version
+
+ -- Alfons Lloret Sananton <lliurex_devel5@edu.gva.es>  Mon, 15 Mar 2010 12:33:05 +0100
+
+lliurex-sgbd (0.6) unstable; urgency=low
+
+  * First Ubuntu Karmic based LliureX(Kripton) release
+
+  * debian/control
+    - Uploaders mails fixed
+    - Deleted llxcfg-dbs transitional package
+    - Changed section to admin
+    - Fixed MySQL name in description
+    - Added minimal version of debhelper build dependence
+
+  * debian/init
+    - Fixed descriptions, provides, and stop runlevels
+
+  * debian/lintian-overrides
+    - Added lintian overrides, avoiding binary without manpage
+
+  * debian/rules
+    - Updated rules to manage lintian overrides
+
+ -- Fco Javier Lopez Perez <lliurex_devel1@edu.gva.es>  Fri, 29 Jan 2010 12:45:42 +0100
+
+lliurex-sgbd (0.5.1) unstable; urgency=low
+
+  * Permission of .my.cnf fixed to 600, thanks to Jeremy Bicha for reporting
+
+ -- Fco Javier Lopez Perez <lliurex_devel1@edu.gva.es>  Mon, 19 Oct 2009 12:04:45 +0200
+
+lliurex-sgbd (0.5) unstable; urgency=low
+
+  * Refactorized package
+    - Renamed source
+    - Transitional package llxcfg-dbs
+  * Utility to assign/sync root password for mysql renamed
+    - mysql_root_passwd
+
+ -- Fco Javier Lopez Perez <lopez_frajav@gva.es>  Tue, 04 Aug 2009 09:59:56 +0200
+
+llxcfg-dbs (0.4.7) unstable; urgency=low
+
+  * Package isn't cpkg
+  * Uploaders Fixed
+
+ -- Raul Rodrigo Segura <raurodse.gva@gmail.com>  Thu, 09 Jul 2009 14:00:55 +0200
+
+llxcfg-dbs (0.4.6) unstable; urgency=low
+
+  * Fixed gtest option in llxdfg-dbs script
+
+ -- Fco Javier Lopez Perez <lopez_frajav@gva.es>  Mon, 16 Mar 2009 14:06:32 +0100
+
+llxcfg-dbs (0.4.5) unstable; urgency=low
+
+  * Added variable to correct management of mysql
+  * Added reset, init and test options in llxcfg-dbs
+  * Updated preconfig and postconfig
+  * Added init script to manage deferred mysql configuration
+
+ -- Fco Javier Lopez Perez <lopez_frajav@gva.es>  Mon, 16 Mar 2009 14:05:10 +0100
+
+llxcfg-dbs (0.4.3) unstable; urgency=low
+
+  * Postinst fixed, now runs on chroot
+
+ -- Fco Javier Lopez Perez <lopez_frajav@gva.es>  Tue, 07 Oct 2008 17:30:44 +0200
+
+llxcfg-dbs (0.4.2) unstable; urgency=low
+
+  * Restored services.list file in cpkg, used by llxcfg-dbs utility
+  * Restart in postconfig os mysql unnecessary, controled now by services.list
+
+ -- Fco Javier Lopez Perez <lopez_frajav@gva.es>  Tue, 06 May 2008 20:09:06 +0200
+
+llxcfg-dbs (0.4.1) unstable; urgency=low
+
+  * Cpkg name in llxcfg-dbs utility fixed. my.cnf moved to my.nf.old if exists
+    the file only.
+  * Postconfig of cpkg updated. No messages are shown when mysql is in safe
+    mode.
+
+ -- Fco Javier Lopez Perez <lopez_frajav@gva.es>  Tue, 06 May 2008 19:38:44 +0200
+
+llxcfg-dbs (0.4) unstable; urgency=low
+
+  * First Ubuntu Gutsy based LliureX
+
+ -- Fco Javier Lopez Perez <lopez_frajav@gva.es>  Tue, 06 May 2008 19:35:45 +0200
+
+llxcfg-dbs (0.3.2) feisty; urgency=low
+
+  * Invocation of llxcfg-cpkg in llxcfg-dbs fixed
+
+ -- Fco Javier Lopez Perez <lopez_frajav@gva.es>  Wed, 30 May 2007 18:43:16 +0200
+
+llxcfg-dbs (0.3.1) feisty; urgency=low
+
+  * Added cpkg.control
+  * Fixed order number in cpkg
+
+ -- Fco Javier Lopez Perez <lopez_frajav@gva.es>  Wed, 30 May 2007 13:22:46 +0200
+
+llxcfg-dbs (0.3) feisty; urgency=low
+
+  * First Ubuntu version
+  * Added cpkg for mysql customization(root password)
+  * Removed unnecessary prerm.
+  * llxcfg-dbs script updated to use cpkg.
+
+ -- Fco Javier Lopez Perez <lopez_frajav@gva.es>  Thu, 24 May 2007 14:46:08 +0200
+
+llxcfg-dbs (0.2.8) UNRELEASED; urgency=low
+
+  * java library of mysql dependency added
+
+ -- Fco Javier Lopez Perez <lopez_frajav@gva.es>  Thu, 14 Sep 2006 19:57:28 +0200
+
+llxcfg-dbs (0.2.7) unstable; urgency=low
+
+  * pwgen dependency fixed
+
+ -- Fco Javier Lopez Perez <lopez_frajav@gva.es>  Tue, 18 Jul 2006 12:51:40 +0200
+
+llxcfg-dbs (0.2.6) unstable; urgency=low
+
+  * Quotation marks deleted in mysql-funcs
+
+ -- Fco Javier Lopez Perez <lopez_frajav@gva.es>  Fri, 30 Jun 2006 10:51:57 +0200
+
+llxcfg-dbs (0.2.5) unstable; urgency=low
+
+  * Function to store the generated mysql administrator password in debconf
+    database for moodle late use added.
+
+ -- Fco Javier Lopez Perez <lopez_frajav@gva.es>  Fri, 30 Jun 2006 08:02:12 +0200
+
+llxcfg-dbs (0.2.4) unstable; urgency=low
+
+  * Prerm fixed
+
+ -- Fco Javier Lopez Perez <lopez_frajav@gva.es>  Mon, 19 Jun 2006 11:34:21 +0200
+
+llxcfg-dbs (0.2.3) unstable; urgency=low
+
+  * Postinstall fixed
+
+ -- Fco Javier Lopez Perez <lopez_frajav@gva.es>  Mon, 19 Jun 2006 11:19:25 +0200
+
+llxcfg-dbs (0.2.2) unstable; urgency=low
+
+  * Script llxcfg-dbs moved to correct directory
+
+ -- Fco Javier Lopez Perez <lopez_frajav@gva.es>  Tue,  13 Jun 2006 09:37:21 +0200
+ 
+llxcfg-dbs (0.2.1) unstable; urgency=low
+
+  * Added instal information
+
+ -- Raul Juncos Castillo <juncos_rau@gva.es>  Tue,  4 Apr 2006 09:52:49 +0200
+
+llxcfg-dbs (0.2) unstable; urgency=low
+
+  * Resolved passwd change for root mysql user
+  * Minor bugs solved
+
+ -- Raul Juncos Castillo <juncos_rau@gva.es>  Tue,  4 Apr 2006 00:44:57 +0200
+
+llxcfg-dbs (0.1) unstable; urgency=low
+
+  * Initial release.
+
+ -- Raul Juncos Castillo <juncos_rau@gva.es>  Mon,  3 Apr 2006 19:56:09 +0200
