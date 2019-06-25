@@ -8,7 +8,7 @@ Standards-Version: 4.1.2
 
 Package: lliurex-sgbd
 Architecture: all
-Depends:${misc:Depends}, virtual-mysql-server, pwgen, mysql-tuneup
+Depends:${misc:Depends}, mysql-server, pwgen, mysql-tuneup
 Description: Several utilities to create and manage mysql databases.
  mysql_root_password: initializate, sync or create mysql root password.
  lliurex-sgbd: create databases, dbusers, and inyect data according 
