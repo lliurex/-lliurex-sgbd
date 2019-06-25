@@ -2,7 +2,7 @@ lliurex-sgbd (0.74-lliurex16) bionic; urgency=medium
 
   * Changed depend virtual-mysql-server with mysql-server
 
- -- Juanma Navarro Mañez <juanma1980@gmail.com>  Tue, 25 Jun 2019 11:56:36 +0200
+ -- Juanma Navarro Manez <juanma1980@gmail.com>  Tue, 25 Jun 2019 11:56:36 +0200
 
 lliurex-sgbd (0.74-lliurex15) bionic; urgency=medium
 
