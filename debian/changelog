@@ -1,3 +1,9 @@
+lliurex-sgbd (0.74+lliurex17) bionic; urgency=medium
+
+  * Changed to configure pmb debian-db.php to docker
+
+ -- Juan Ramon Pelegrina <juapesai@hotmail.com>  Thu, 11 Jul 2019 13:45:13 +0200
+
 lliurex-sgbd (0.74+lliurex16) bionic; urgency=medium
 
   * Changed depend virtual-mysql-server with mysql-server
