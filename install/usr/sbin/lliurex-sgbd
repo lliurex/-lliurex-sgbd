@@ -139,6 +139,13 @@ create_include_file(){
 	if [ ! -d  $INCLUDE_PATH ] ; then
 		mkdir $INCLUDE_PATH
 	fi
+ 
+	if [ "$DB_NAME" == "pmb" ];then
+		DB_SERVER='localhost'
+	else
+		DB_SERVER=''
+	fi
+
 	fecha=$(date)
 	echo "Creating include file: $INCLUDE_FILE"
 	echo "<?php"> $INCLUDE_FILE
@@ -151,7 +158,7 @@ create_include_file(){
 	echo "\$dbpass='$DB_USER_PASS'; ">> $INCLUDE_FILE
 	echo "\$basepath=''; ">> $INCLUDE_FILE
 	echo "\$dbname='$DB_NAME'; ">> $INCLUDE_FILE
-	echo "\$dbserver=''; ">> $INCLUDE_FILE
+	echo "\$dbserver='$DB_SERVER'; ">> $INCLUDE_FILE
 	echo "\$dbport=''; ">> $INCLUDE_FILE
 	echo "\$dbtype='mysql'; ">> $INCLUDE_FILE
 	chmod 640 $INCLUDE_FILE || true
@@ -252,7 +259,7 @@ edit_sql_mode(){
 
     if [ -f ${MYSQLCNF_PATH}  ]; then
     	SQLCONFIG_OLD=$(sed -e '/sql_mode'/!d ${MYSQLCNF_PATH})
-       
+      
         if [ -z ${SQLCONFIG_OLD} ]; then
 
         	echo "Doing backup of file ${MYSQLCNF_PATH}"
@@ -285,8 +292,10 @@ edit_sql_mode(){
     fi	
 }
 
+
+
 usage (){
-	echo "usage:  lliurex-sgbd --config package_name | --template package_name | --install package_name  | --upgrade package_name | --remove package_name | --purge package_name | --inject_sql package_name sql_file_with_path | --db_is_present package_name | --add_include_file package_name | --is_include_present package_name | --sql_mode package_name"
+	echo "usage:  lliurex-sgbd --config package_name | --template package_name | --install package_name  | --upgrade package_name | --remove package_name | --purge package_name | --inject_sql package_name sql_file_with_path | --db_is_present package_name | --add_include_file package_name | --is_include_present package_name | --sql_mode package_name | --docker_config package_name"
 }
 
 #main
@@ -391,6 +400,7 @@ case $1 in
 		edit_sql_mode
 	;;	
 
+	
 	*)
 		usage
 	;;
