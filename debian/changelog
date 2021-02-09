@@ -1,4 +1,4 @@
-lliurex-sgbd (0.74+lliurex17) bionic; urgency=medium
+lliurex-sgbd (0.75) focal; urgency=medium
 
   * Changed to configure pmb debian-db.php to docker
 
