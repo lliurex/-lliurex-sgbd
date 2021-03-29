@@ -18,7 +18,6 @@
 # --is_include_present -> check if include file exists
 # --add_include_file -> create include file
 # --db_is_present -> check if database exists
-# --sql_mode -> change sql_mode variable to correct perfomance
 ###########################################################
 
 PACKAGE_NAME=$2
@@ -252,50 +251,8 @@ get_config_data(){
 	fi
 }
 
-edit_sql_mode(){
-	MYSQLCNF_PATH="/etc/mysql/mysql.cnf"
-	MYSQLCNF_DIR=$(dirname ${MYSQLCNF_PATH})
-	SQLCONFIG_NEW='sql_mode="NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_AUTO_CREATE_USER,NO_ENGINE_SUBSTITUTION"'
-
-    if [ -f ${MYSQLCNF_PATH}  ]; then
-    	SQLCONFIG_OLD=$(sed -e '/sql_mode'/!d ${MYSQLCNF_PATH})
-      
-        if [ -z ${SQLCONFIG_OLD} ]; then
-
-        	echo "Doing backup of file ${MYSQLCNF_PATH}"
-        	cp ${MYSQLCNF_PATH} ${MYSQLCNF_DIR}"/mysql_"${NOW}".cnf"
-        	echo "Adding sql_mode in file ${MYSQLCNF_PATH}"
-        	MYSQLD=$(sed -e '/mysqld'/!d ${MYSQLCNF_PATH})
-        	if [ -z ${MYSQLD} ]; then
-        		sed -i '$a[mysqld]' ${MYSQLCNF_PATH}
-        	fi	
-        	sed -i '$a'${SQLCONFIG_NEW} ${MYSQLCNF_PATH}
-            systemctl restart mysql 
-        else
-        	if [[ ${SQLCONFIG_OLD} == ${SQLCONFIG_NEW} ]]; then
-
-        		echo "NOTHING TO DO. File ${MYSQLCNF_PATH} already update"
-        	else
-        		echo "Doing backup of file ${MYSQLCNF_PATH}"
-        		cp ${MYSQLCNF_PATH} ${MYSQLCNF_DIR}"/mysql_"${NOW}".cnf"
-        		echo "Adding new sql_mode configuration in file ${MYSQLCNF_PATH}"
-        		MYSQLD=$(sed -e '/mysqld'/!d ${MYSQLCNF_PATH})
-        		if [ -z ${MYSQLD} ]; then
-        			sed -i '$a[mysqld]' ${MYSQLCNF_PATH}
-        		fi	
-        		sed -i 's/'${SQLCONFIG_OLD}'/'${SQLCONFIG_NEW}'/g' ${MYSQLCNF_PATH}
-        		systemctl restart mysql
-        	fi		
-        fi
-    else
-    	echo "NOTHING TO DO. File ${MYSQLCNF_PATH} NOT FOUND"	
-    fi	
-}
-
-
-
 usage (){
-	echo "usage:  lliurex-sgbd --config package_name | --template package_name | --install package_name  | --upgrade package_name | --remove package_name | --purge package_name | --inject_sql package_name sql_file_with_path | --db_is_present package_name | --add_include_file package_name | --is_include_present package_name | --sql_mode package_name | --docker_config package_name"
+	echo "usage:  lliurex-sgbd --config package_name | --template package_name | --install package_name  | --upgrade package_name | --remove package_name | --purge package_name | --inject_sql package_name sql_file_with_path | --db_is_present package_name | --add_include_file package_name | --is_include_present package_name | --docker_config package_name"
 }
 
 #main
@@ -396,11 +353,6 @@ case $1 in
 		echo "$DB_IS_IN_MYSQL"
 	;;
 
-	--sql_mode)
-		edit_sql_mode
-	;;	
-
-	
 	*)
 		usage
 	;;
