@@ -12,6 +12,7 @@ debug=0
 limit=10
 alive=2
 type_db=""
+mariadb_lliurex_cnf="/etc/mysql/conf.d/mariadb_lliurex.cnf"
 
 mysql_version_upper(){
     local ret=1;
@@ -83,7 +84,9 @@ do_write_passSql() {
 	if mysql_version_upper; then
 	    #sqlQuery="UPDATE mysql.user SET authentication_string=PASSWORD($passwd),plugin='mysql_native_password',password_expired='N' WHERE User='root'; "
 	    # NEED TO CHANGE AUTH PLUGIN abobe fails when --skip-grant-tables
-	    sqlQuery="FLUSH PRIVILEGES; ALTER USER 'root'@'localhost' IDENTIFIED WITH mysql_native_password BY '$passwd'; "
+	    #sqlQuery="FLUSH PRIVILEGES; ALTER USER 'root'@'localhost' IDENTIFIED WITH mysql_native_password BY '$passwd'; "
+
+	    sqlQuery="FLUSH PRIVILEGES; ALTER USER 'root'@'localhost' IDENTIFIED BY '$passwd'; "
 	    
 	else
 	    sqlQuery="UPDATE mysql.user SET Password=PASSWORD('$passwd') WHERE User='root'; "
@@ -129,6 +132,30 @@ do_create_utf8_cnf(){
 	
 }
 
+do_write_mariadb_lliurex_cnf(){
+	echo -e "[mysqld]"
+	echo -e "default_storage_engine=MyISAM"
+	echo -e "sql_mode=''"
+	echo -e "query_cache_limit=2M"
+	echo -e "query_cache_size=16M"
+	echo -e "join_buffer_size=4M"
+	echo -e "key_buffer_size=1G"
+	echo -e "max_allowed_packet=64M"
+	echo -e "wait_timeout=300"
+	echo -e ""
+	echo -e "[mysqldump]"
+	echo -e "max_allowed_packet=64M"
+	echo -e ""
+	
+	return 0
+}
+
+do_create_mariadb_lliurex_cnf(){
+	
+	do_write_mariadb_lliurex_cnf > "$mariadb_lliurex_cnf"
+	return 0
+	
+}
 is_mycnf_present(){
 	if [ ! -e "$passwd_file" ] ; then
 		# root my.cnf file does not exists
@@ -145,6 +172,16 @@ is_utf8_present(){
 	fi
 
 	return 0
+}
+
+
+is_mariadb_lliurex_present(){
+	if [ ! -e "$mariadb_lliurex_cnf" ] ; then
+		return 1
+	fi
+
+	return 0
+
 }
 
 on_systemd(){
@@ -336,7 +373,15 @@ configure (){
 		need_restart=1
 		
 	fi
-		
+
+	if mysql_version_upper; then
+		if ! is_mariadb_lliurex_present; then
+			do_create_mariadb_lliurex_cnf
+			need_restart=1
+			
+		fi
+	fi	
+	
 
 	if is_mycnf_present && is_mysql_alive ; then
 		do_get_passwd
