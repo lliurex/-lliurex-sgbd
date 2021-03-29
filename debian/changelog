@@ -1,3 +1,10 @@
+lliurex-sgbd (0.76) focal; urgency=medium
+
+  * Fixed mysql_root_passwd.
+  * Created custom .cnf file in mysql_root_passwd instead lliurex-sgbd script
+
+ -- Juan Ramon Pelegrina <juapesai@hotmail.com>  Mon, 29 Mar 2021 14:05:14 +0200
+
 lliurex-sgbd (0.75) focal; urgency=medium
 
   * Changed to configure pmb debian-db.php to docker
