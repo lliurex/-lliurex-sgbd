@@ -81,9 +81,9 @@ do_write_passSql() {
 	local sqlQuery
 	
 	if mysql_version_upper; then
-	    sqlQuery="UPDATE mysql.user SET authentication_string=PASSWORD('$passwd'),plugin='mysql_native_password',password_expired='N' WHERE User='root'; "
+	    #sqlQuery="UPDATE mysql.user SET authentication_string=PASSWORD($passwd),plugin='mysql_native_password',password_expired='N' WHERE User='root'; "
 	    # NEED TO CHANGE AUTH PLUGIN abobe fails when --skip-grant-tables
-	    #sqlQuery="ALTER USER 'root'@'localhost' IDENTIFIED WITH mysql_native_password BY '$passwd'; "
+	    sqlQuery="FLUSH PRIVILEGES; ALTER USER 'root'@'localhost' IDENTIFIED WITH mysql_native_password BY '$passwd'; "
 	    
 	else
 	    sqlQuery="UPDATE mysql.user SET Password=PASSWORD('$passwd') WHERE User='root'; "
