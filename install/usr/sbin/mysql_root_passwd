@@ -134,7 +134,6 @@ do_create_utf8_cnf(){
 
 do_write_mariadb_lliurex_cnf(){
 	echo -e "[mysqld]"
-	echo -e "default_storage_engine=MyISAM"
 	echo -e "sql_mode=''"
 	echo -e "query_cache_limit=2M"
 	echo -e "query_cache_size=16M"
