@@ -1,3 +1,9 @@
+lliurex-sgbd (0.77) focal; urgency=medium
+
+  * Fixed custom cnf file
+  
+ -- Juan Ramon Pelegrina <juapesai@hotmail.com>  Wed, 14 Apr 2021 09:23:37 +0200
+
 lliurex-sgbd (0.76) focal; urgency=medium
 
   * Fixed mysql_root_passwd.
