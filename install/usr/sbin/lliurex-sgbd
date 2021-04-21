@@ -159,7 +159,7 @@ create_include_file(){
 	echo "\$dbname='$DB_NAME'; ">> $INCLUDE_FILE
 	echo "\$dbserver='$DB_SERVER'; ">> $INCLUDE_FILE
 	echo "\$dbport=''; ">> $INCLUDE_FILE
-	echo "\$dbtype='mysql'; ">> $INCLUDE_FILE
+	echo "\$dbtype='mariadb'; ">> $INCLUDE_FILE
 	chmod 640 $INCLUDE_FILE || true
 	chgrp www-data $INCLUDE_FILE || true
 }
