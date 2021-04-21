@@ -1,3 +1,9 @@
+lliurex-sgbd (0.78) focal; urgency=medium
+
+  * Changed mysql by mariadb in debian-db file template
+  
+ -- Juan Ramon Pelegrina <juapesai@hotmail.com>  Wed, 21 Apr 2021 15:38:06 +0200
+
 lliurex-sgbd (0.77) focal; urgency=medium
 
   * Fixed custom cnf file
